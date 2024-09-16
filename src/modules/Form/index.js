@@ -5,18 +5,42 @@ import Button from '../../components/button';
 
 function Form({ isSigninPage = true }) {
   const [data, setData] = useState({
-    fullName: !isSigninPage ? '' : undefined,
     email: '',
-    password: ''
+    username: '',
+    password: '',
+    passwordConfirmation: ''
   })
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Add form submission logic here
-  }
 
   const navigate = useNavigate(); // Use navigate if using react-router
 
+  const handleSubmit = async(e) => {
+    console.log('data:', data);
+    e.preventDefault();
+    const endpoint = isSigninPage ? 'http://localhost:8000/users/sign_in' : 'http://localhost:8000/users';
+    const payload = isSigninPage ? {
+      user: {
+        username: data.username,
+        password: data.password
+      }
+    } : {
+      user: {
+        email: data.email,
+        username: data.username,
+        password: data.password,
+        password_confirmation: data.passwordConfirmation
+      }
+    };
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await response.json();
+    console.log('result:', result);
+  }
   return (
     <div className="bg-[#e1edff] h-screen flex justify-center items-center">
       <div className="bg-white w-[600px] h-[800px] shadow-lg rounded-lg flex flex-col justify-center items-center">
@@ -27,32 +51,43 @@ function Form({ isSigninPage = true }) {
         <form className="flex flex-col items-center w-full" onSubmit={(e) => handleSubmit(e)}>
           {!isSigninPage && (
             <Input
-              label="Full Name"
-              name="fullName"
-              placeholder="Enter your full name"
+              label="Email Address"
+              type="email"
+              name="email"
+              placeholder="Enter your email"
               className="mb-6"
-              value={data.fullName}
-              onChange={(e) => setData({ ...data, fullName: e.target.value })}
+              value={data.email}
+              onChange={(e) => setData({ ...data, email: e.target.value })}
             />
           )}
           <Input
-            label="Email Address"
-            type="email"
-            name="email"
-            placeholder="Enter your email"
+            label="Username"
+            name="username"
+            placeholder="Enter your username"
             className="mb-6"
-            value={data.email}
-            onChange={(e) => setData({ ...data, email: e.target.value })}
+            value={data.fullName}
+            onChange={(e) => setData({ ...data, fullName: e.target.value })}
           />
           <Input
             label="Password"
             type="password"
             name="password"
             placeholder="Enter your Password"
-            className="mb-14"
+            className="mb-6"
             value={data.password}
             onChange={(e) => setData({ ...data, password: e.target.value })}
           />
+          {!isSigninPage && (
+            <Input
+              label="Password Conformation"
+              type="password"
+              name="passwordConfirmation"
+              placeholder="Enter your Password"
+              className="mb-14"
+              value={data.passwordConfirmation}
+              onChange={(e) => setData({ ...data, password: e.target.value })}
+            />
+          )}
           <Button label={isSigninPage ? 'Sign in' : "Sign up"} type="submit" className="w-1/2 mb-4" />
         </form>
         <div>

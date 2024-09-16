@@ -7,6 +7,11 @@ const ProtectedRoute = ({ children, auth = false }) => {
   const isLoggedIn = localStorage.getItem('user:token') !== null;
   const location = useLocation();
 
+  if (!isLoggedIn && auth) {
+    return <Navigate to='/users/sign_in' />;
+  } else if (isLoggedIn && ['/users/sign_in', '/users/sign_up'].includes(location.pathname)) {
+    return <Navigate to='/' />;
+  }
 
   return children;  
 };

@@ -2,10 +2,45 @@ import './App.css';
 import Form from './modules/Form';
 import Dashboard from './modules/Dashboard';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 const ProtectedRoute = ({ children, auth = false }) => {
-  const isLoggedIn = localStorage.getItem('user:token') !== null;
+  const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        debugger
+        if (token) {
+          // Set the Authorization header
+          const response = await fetch('http://localhost:8000/current_user', {
+            method: 'GET',
+            headers: { 
+              Authorization: `${token}` 
+            }
+          });
+
+          const result = await response.json();
+          if (response.status === 200) {
+            setIsLoggedIn(true);
+          }
+        }
+      } catch (error) {
+        setIsLoggedIn(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>; // Or a spinner/loading indicator
+  }
 
   if (!isLoggedIn && auth) {
     return <Navigate to='/users/sign_in' />;
@@ -13,8 +48,9 @@ const ProtectedRoute = ({ children, auth = false }) => {
     return <Navigate to='/' />;
   }
 
-  return children;  
+  return children;
 };
+
 
 function App() {
   return (

@@ -1,3 +1,4 @@
+import React from 'react';
 import './App.css';
 import Form from './modules/Form';
 import Dashboard from './modules/Dashboard';
@@ -7,6 +8,7 @@ import { useEffect, useState } from 'react';
 const ProtectedRoute = ({ children, auth = false }) => {
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState('');
   const location = useLocation();
 
   useEffect(() => {
@@ -24,6 +26,8 @@ const ProtectedRoute = ({ children, auth = false }) => {
           });
 
           const result = await response.json();
+          console.log(result.user)
+          setCurrentUser(result.user)
           if (response.status === 200) {
             setIsLoggedIn(true);
           }
@@ -48,7 +52,7 @@ const ProtectedRoute = ({ children, auth = false }) => {
     return <Navigate to='/' />;
   }
 
-  return children;
+  return React.cloneElement(children, { currentUser });
 };
 
 

@@ -8,21 +8,23 @@ function Dashboard({ currentUser }) {
   const [conversation, setConversation] = useState({})
   const [messages, setMessages] = useState([])
   const [message, setMessage] = useState('');
+  const [search, setSearch] = useState('');
+
+  const fetchConversations = async () => {
+    const token = localStorage.getItem('token');
+    const response = await fetch('http://localhost:8000/chatrooms', {
+      method: 'GET',
+      headers: {
+        Authorization: `${token}`
+      },
+    })
+    const resData = await response.json()
+    setConversations(resData)
+  }
 
   useEffect(() => {
-    const fetchConversations = async () => {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/chatrooms', {
-        method: 'GET',
-        headers: {
-          Authorization: `${token}`
-        },
-      })
-      const resData = await response.json()
-      setConversations(resData)
-    }
-    fetchConversations()
-  }, [])
+    fetchConversations(); 
+  }, []);
 
   const fetchMessages = async (user_id) => {
     try {
@@ -62,14 +64,51 @@ function Dashboard({ currentUser }) {
         content: content
       })
     });
+    const result = await response.json();
+    if (response.ok) {
+      setMessages(prevMessages => [...prevMessages, result]);
+    } else {
+      alert(result.status.errors);
+    }
   };
 
   const handleSendMessage = () => {
     if (message.trim() !== '') {
-      createMessage(message, conversation.chatroom_id); 
-      setMessage(''); 
+      createMessage(message, conversation.chatroom_id);
+      setMessage('');
     }
   };
+
+  const handleSearch = async (e) => {
+    e.preventDefault(); // prevent page reload
+
+    const token = localStorage.getItem('token');
+    console.log(search)
+    if (search === '') {
+      console.log("search")
+      fetchConversations()
+    }
+    try {
+      const response = await fetch(`http://localhost:8000/search?search=${encodeURIComponent(search)}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setConversations(result); // update conversations on success
+      } else {
+        alert(result.status.errors);
+      }
+    } catch (error) {
+      console.error('Error searching:', error);
+    }
+  };
+
 
   return (
     <div className='w-screen flex h-screen'>
@@ -83,16 +122,46 @@ function Dashboard({ currentUser }) {
             <p className='text-lg font-light'>Active</p>
           </div>
         </div>
-        <form class="max-w-md mx-auto">
-          <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
-          <div class="relative">
-            <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-              <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+        <form className="max-w-md mx-auto" onSubmit={handleSearch}>
+          <label htmlFor="default-search" className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">
+            Search
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+              <svg
+                className="w-4 h-4 text-gray-500 dark:text-gray-400"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                />
               </svg>
             </div>
-            <input type="search" id="default-search" class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" placeholder="Search Mockups, Logos..." required />
-            <button type="submit" class="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 ">Search</button>
+            <input
+              type="search"
+              id="default-search"
+              className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Search Mockups, Logos..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value); // update search state
+                e.target.form.requestSubmit(); // automatically submit form
+              }}
+              required
+            />
+            <button
+              type="submit"
+              className="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2"
+            >
+              Search
+            </button>
           </div>
         </form>
         <hr />
@@ -150,12 +219,12 @@ function Dashboard({ currentUser }) {
               <input
                 placeholder="Type a message..."
                 value={message}
-                onChange={(e) => setMessage(e.target.value)} 
+                onChange={(e) => setMessage(e.target.value)}
                 className='w-[75%] p-4 border-0 shadow-lg rounded-full bg-light focus:ring-0 focus:border-0 outline-none'
               />
               <div
                 className='ml-4 p-2 cursor-pointer bg-light rounded-full'
-                onClick={handleSendMessage} 
+                onClick={handleSendMessage}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path stroke="none" d="M0 0h24v24H0z" fill="none" />

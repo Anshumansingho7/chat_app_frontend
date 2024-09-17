@@ -9,7 +9,6 @@ function Dashboard({ currentUser }) {
   const [messages, setMessages] = useState([])
   const [message, setMessage] = useState('');
   const [search, setSearch] = useState('');
-  console.log("messages", messages)
   const fetchConversations = async () => {
     const token = localStorage.getItem('token');
     const response = await fetch('http://localhost:8000/chatrooms', {
@@ -86,7 +85,6 @@ function Dashboard({ currentUser }) {
   const handleSearch = async (e) => {
 
     const token = localStorage.getItem('token');
-    console.log({ search })
     try {
       const response = await fetch(`http://localhost:8000/search?search=${encodeURIComponent(search)}`, {
         method: 'GET',

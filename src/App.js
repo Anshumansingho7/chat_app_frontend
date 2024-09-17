@@ -15,7 +15,6 @@ const ProtectedRoute = ({ children, auth = false }) => {
     const checkAuth = async () => {
       try {
         const token = localStorage.getItem('token');
-        debugger
         if (token) {
           // Set the Authorization header
           const response = await fetch('http://localhost:8000/current_user', {

@@ -25,7 +25,6 @@ const ProtectedRoute = ({ children, auth = false }) => {
           });
 
           const result = await response.json();
-          console.log(result.user)
           setCurrentUser(result.user)
           if (response.status === 200) {
             setIsLoggedIn(true);

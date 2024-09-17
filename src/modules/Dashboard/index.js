@@ -7,7 +7,7 @@ function Dashboard({ currentUser }) {
   const [conversations, setConversations] = useState([])
   const [conversation, setConversation] = useState({})
   const [messages, setMessages] = useState([])
-  console.log(messages)
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     const fetchConversations = async () => {
@@ -50,6 +50,27 @@ function Dashboard({ currentUser }) {
     }
   };
 
+  const createMessage = async (content, chatroomId) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:8000/chatrooms/${chatroomId}/messages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        content: content
+      })
+    });
+  };
+
+  const handleSendMessage = () => {
+    if (message.trim() !== '') {
+      createMessage(message, conversation.chatroom_id); 
+      setMessage(''); 
+    }
+  };
+
   return (
     <div className='w-screen flex h-screen'>
       <div className='w-[100%] md:w-[25%] h-screen bg-secondary '>
@@ -62,9 +83,21 @@ function Dashboard({ currentUser }) {
             <p className='text-lg font-light'>Active</p>
           </div>
         </div>
+        <form class="max-w-md mx-auto">
+          <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+              <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+              </svg>
+            </div>
+            <input type="search" id="default-search" class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" placeholder="Search Mockups, Logos..." required />
+            <button type="submit" class="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 ">Search</button>
+          </div>
+        </form>
         <hr />
-        <div className='mx-10 mt-10 h-[77%] overflow-y-auto'>
-          <div className='text-primary text-lg'>Chats</div>
+        <div className='text-primary text-lg mt-4 ml-14'>Chats</div>
+        <div className='mx-10 mt-5 h-[67%] overflow-y-auto'>
           <div>
             {conversations.map((conversation) => {
               return (
@@ -114,8 +147,16 @@ function Dashboard({ currentUser }) {
               </div>
             </div>
             <div className='p-14 w-full flex items-center'>
-              <Input placeholder="Type a message..." InputclassName="w-[75%]" className='p-4 border-0 shadow-lg rounded-full bg-light focus:ring-0 focus:border-0 outline-none' />
-              <div className='ml-4 p-2 cursor-pointer bg-light rounded-full'>
+              <input
+                placeholder="Type a message..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)} 
+                className='w-[75%] p-4 border-0 shadow-lg rounded-full bg-light focus:ring-0 focus:border-0 outline-none'
+              />
+              <div
+                className='ml-4 p-2 cursor-pointer bg-light rounded-full'
+                onClick={handleSendMessage} 
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                   <path d="M10 14l11 -11" />

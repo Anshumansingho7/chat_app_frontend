@@ -23,8 +23,12 @@ function Dashboard({ currentUser }) {
   }
 
   useEffect(() => {
-    fetchConversations(); 
-  }, []);
+    fetchConversations();
+  }, [search === '']);
+
+  useEffect(() => {
+    handleSearch();
+  }, [search]);
 
   const fetchMessages = async (user_id) => {
     try {
@@ -44,7 +48,7 @@ function Dashboard({ currentUser }) {
         setMessages(resData.messages)
         setConversation(resData.chatroom)
       } else {
-        alert(resData.status.errors);
+        alert(resData?.status?.errors);
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -80,14 +84,9 @@ function Dashboard({ currentUser }) {
   };
 
   const handleSearch = async (e) => {
-    e.preventDefault(); // prevent page reload
 
     const token = localStorage.getItem('token');
-    console.log(search)
-    if (search === '') {
-      console.log("search")
-      fetchConversations()
-    }
+    console.log({search})
     try {
       const response = await fetch(`http://localhost:8000/search?search=${encodeURIComponent(search)}`, {
         method: 'GET',
@@ -99,10 +98,11 @@ function Dashboard({ currentUser }) {
 
       const result = await response.json();
 
-      if (response.ok) {
-        setConversations(result); // update conversations on success
+      if (response.ok ) {
+        setConversations(result); 
+        
       } else {
-        alert(result.status.errors);
+        // alert(result?.status?.errors);
       }
     } catch (error) {
       console.error('Error searching:', error);
@@ -122,7 +122,7 @@ function Dashboard({ currentUser }) {
             <p className='text-lg font-light'>Active</p>
           </div>
         </div>
-        <form className="max-w-md mx-auto" onSubmit={handleSearch}>
+        <form className="max-w-md mx-auto" onSubmit={(e)=> e.preventDefault()}>
           <label htmlFor="default-search" className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">
             Search
           </label>
@@ -147,12 +147,12 @@ function Dashboard({ currentUser }) {
             <input
               type="search"
               id="default-search"
-              className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+              className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50"
               placeholder="Search Mockups, Logos..."
               value={search}
               onChange={(e) => {
-                setSearch(e.target.value); // update search state
-                e.target.form.requestSubmit(); // automatically submit form
+                setSearch(e.target.value); 
+                // e.target.form.requestSubmit();
               }}
               required
             />
@@ -168,7 +168,7 @@ function Dashboard({ currentUser }) {
         <div className='text-primary text-lg mt-4 ml-14'>Chats</div>
         <div className='mx-10 mt-5 h-[67%] overflow-y-auto'>
           <div>
-            {conversations.map((conversation) => {
+            {conversations.length > 0? conversations.map((conversation) => {
               return (
                 <div className='flex items-center py-8 border-b border-b-gray-300'>
                   <div className='cursor-pointer flex items-center' onClick={() => fetchMessages(conversation.other_user.id)}>
@@ -182,7 +182,7 @@ function Dashboard({ currentUser }) {
                   </div>
                 </div>
               );
-            })}
+            }):<>no user found!</>}
           </div>
         </div>
       </div>

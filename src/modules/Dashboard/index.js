@@ -9,7 +9,7 @@ function Dashboard({ currentUser }) {
   const [messages, setMessages] = useState([])
   const [message, setMessage] = useState('');
   const [search, setSearch] = useState('');
-
+  console.log("messages", messages)
   const fetchConversations = async () => {
     const token = localStorage.getItem('token');
     const response = await fetch('http://localhost:8000/chatrooms', {
@@ -86,7 +86,7 @@ function Dashboard({ currentUser }) {
   const handleSearch = async (e) => {
 
     const token = localStorage.getItem('token');
-    console.log({search})
+    console.log({ search })
     try {
       const response = await fetch(`http://localhost:8000/search?search=${encodeURIComponent(search)}`, {
         method: 'GET',
@@ -98,9 +98,9 @@ function Dashboard({ currentUser }) {
 
       const result = await response.json();
 
-      if (response.ok ) {
-        setConversations(result); 
-        
+      if (response.ok) {
+        setConversations(result);
+
       } else {
         // alert(result?.status?.errors);
       }
@@ -122,7 +122,7 @@ function Dashboard({ currentUser }) {
             <p className='text-lg font-light'>Active</p>
           </div>
         </div>
-        <form className="max-w-md mx-auto" onSubmit={(e)=> e.preventDefault()}>
+        <form className="max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
           <label htmlFor="default-search" className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">
             Search
           </label>
@@ -151,7 +151,7 @@ function Dashboard({ currentUser }) {
               placeholder="Search Mockups, Logos..."
               value={search}
               onChange={(e) => {
-                setSearch(e.target.value); 
+                setSearch(e.target.value);
                 // e.target.form.requestSubmit();
               }}
               required
@@ -168,7 +168,7 @@ function Dashboard({ currentUser }) {
         <div className='text-primary text-lg mt-4 ml-14'>Chats</div>
         <div className='mx-10 mt-5 h-[67%] overflow-y-auto'>
           <div>
-            {conversations.length > 0? conversations.map((conversation) => {
+            {conversations.length > 0 ? conversations.map((conversation) => {
               return (
                 <div className='flex items-center py-8 border-b border-b-gray-300'>
                   <div className='cursor-pointer flex items-center' onClick={() => fetchMessages(conversation.other_user.id)}>
@@ -182,7 +182,7 @@ function Dashboard({ currentUser }) {
                   </div>
                 </div>
               );
-            }):<>no user found!</>}
+            }) : <>no user found!</>}
           </div>
         </div>
       </div>
@@ -209,11 +209,18 @@ function Dashboard({ currentUser }) {
             <div className='h-[75%] w-full overflow-scroll shadow-sm scrollbar-hide flex flex-col-reverse'>
               <div className='px-10 py-14'>
                 {messages.map((message, index) => (
-                  <div key={index} className={`max-w-[40%] p-4 mb-6 ${message.isFromUser ? 'bg-primary rounded-b-xl rounded-tl-xl ml-auto text-white' : 'bg-secondary rounded-b-xl rounded-tr-xl'}`}>
+                  <div
+                    key={index} // Add a key to uniquely identify each element
+                    className={`max-w-[40%] p-4 mb-6 ${message.user_id === currentUser.id
+                        ? 'bg-primary rounded-b-xl rounded-tl-xl ml-auto text-white'
+                        : 'bg-secondary rounded-b-xl rounded-tr-xl'
+                      }`}
+                  >
                     {message.content}
                   </div>
                 ))}
               </div>
+
             </div>
             <div className='p-14 w-full flex items-center'>
               <input

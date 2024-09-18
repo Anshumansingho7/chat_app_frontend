@@ -264,6 +264,12 @@ function Dashboard({ currentUser }) {
                 placeholder="Type a message..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevents the default behavior of Enter key
+                    handleSendMessage(); // Calls the function to send the message
+                  }
+                }}
                 className='w-[75%] p-4 border-0 shadow-lg rounded-full bg-light focus:ring-0 focus:border-0 outline-none'
               />
               <div

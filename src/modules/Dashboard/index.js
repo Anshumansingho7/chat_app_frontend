@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Avatar from '../../assets/avtar.webp'
+import { createConsumer } from "@rails/actioncable"
 import Input from '../../components/input'
 import './index.css';
 
@@ -9,6 +10,7 @@ function Dashboard({ currentUser }) {
   const [messages, setMessages] = useState([])
   const [message, setMessage] = useState('');
   const [search, setSearch] = useState('');
+  const consumer = createConsumer("ws://localhost:8000/cable");  // Replace with your backend URL
   const fetchConversations = async () => {
     const token = localStorage.getItem('token');
     const response = await fetch('http://localhost:8000/chatrooms', {
@@ -20,6 +22,26 @@ function Dashboard({ currentUser }) {
     const resData = await response.json()
     setConversations(resData)
   }
+
+  useEffect(() => {  
+    const chatroomChannel = consumer.subscriptions.create(
+      { channel: "MessageChannel", chatroom_id: conversation.chatroomId },
+      {
+        received(data) {
+          if ( conversation.chatroom_id === data.chatroom_id){
+            setMessages(prevMessages => [...prevMessages, data]);
+          }
+          if ( currentUser.id === data.other_user_id) {
+            console.log("ha yaha notification bejh do")
+          }
+        }
+      }
+    ); 
+    return () => {
+      chatroomChannel.unsubscribe();
+    };
+  }, [messages]); 
+
 
   useEffect(() => {
     fetchConversations();
@@ -69,7 +91,6 @@ function Dashboard({ currentUser }) {
     });
     const result = await response.json();
     if (response.ok) {
-      setMessages(prevMessages => [...prevMessages, result]);
     } else {
       alert(result.status.errors);
     }

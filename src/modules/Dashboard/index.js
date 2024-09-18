@@ -23,28 +23,46 @@ function Dashboard({ currentUser }) {
     setConversations(resData)
   }
 
-  useEffect(() => {  
+  useEffect(() => {
     const chatroomChannel = consumer.subscriptions.create(
       { channel: "MessageChannel", chatroom_id: conversation.chatroomId },
       {
         received(data) {
-          if ( conversation.chatroom_id === data.chatroom_id){
+          if (conversation.chatroom_id === data.chatroom_id) {
             setMessages(prevMessages => [...prevMessages, data]);
           }
-          if ( currentUser.id === data.other_user_id) {
+          if (currentUser.id === data.other_user_id) {
             console.log("ha yaha notification bejh do")
+            sendNotification(data.content);
           }
         }
       }
-    ); 
+    );
     return () => {
       chatroomChannel.unsubscribe();
     };
-  }, [messages]); 
+  }, [messages]);
+
+  const sendNotification = (data) => {
+    Notification.requestPermission().then(permission => {
+      if ('Notification' in window) {
+        new Notification(data);
+      } else {
+        console.log("Notifications denied");
+      }
+    });
+  };
 
 
   useEffect(() => {
     fetchConversations();
+    Notification.requestPermission().then(permission => {
+      if ('Notification' in window) {
+        console.log("Notifications denied");
+      } else {
+        console.log("Notifications denied");
+      }
+    });
   }, [search === '']);
 
   useEffect(() => {
@@ -231,8 +249,8 @@ function Dashboard({ currentUser }) {
                   <div
                     key={index} // Add a key to uniquely identify each element
                     className={`max-w-[40%] p-4 mb-6 ${message.user_id === currentUser.id
-                        ? 'bg-primary rounded-b-xl rounded-tl-xl ml-auto text-white'
-                        : 'bg-secondary rounded-b-xl rounded-tr-xl'
+                      ? 'bg-primary rounded-b-xl rounded-tl-xl ml-auto text-white'
+                      : 'bg-secondary rounded-b-xl rounded-tr-xl'
                       }`}
                   >
                     {message.content}

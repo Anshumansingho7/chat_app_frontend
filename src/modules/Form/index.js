@@ -37,23 +37,24 @@ function Form({ isSigninPage = true }) {
         },
         body: JSON.stringify(payload),
       });
-
+  
       const result = await response.json();
-
+  
       if (response.ok) {
         const token = response.headers.get('authorization');
         if (token) {
-          localStorage.setItem('token', token); 
+          localStorage.setItem('token', token);
         }
         navigate('/');
       } else {
-        alert(result.status.errors)
+        alert(result.status.errors);
       }
     } catch (error) {
       console.error('Error during operation:', error);
       alert('An error occurred. Please try again.');
     }
   };
+  
 
   return (
     <div className="bg-[#e1edff] h-screen flex justify-center items-center">

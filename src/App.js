@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 import Form from './modules/Form';
 import Dashboard from './modules/Dashboard';
-import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children, auth = false }) => {
   const token = localStorage.getItem('token'); 
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true); 
   const location = useLocation();
+  const navigate = useNavigate();
 
   const checkAuth = async () => {
     if (token) {
@@ -21,10 +22,17 @@ const ProtectedRoute = ({ children, auth = false }) => {
         });
         const result = await response.json();
         if (response.status === 200 && result.user) {
-          setCurrentUser(result.user); 
+          setCurrentUser(result.user);
+        } else if (result?.status === 401 && result?.message === 'User has no active session') {
+          console.log("i run here")
+          localStorage.removeItem('token')
+          const token = localStorage.getItem('token')
+          if (!token) {
+            navigate('/users/sign_in')
+          }
         }
       } catch (error) {
-        console.error('Error fetching user:', error); 
+        console.error('Error fetching user:', error);
       } finally {
         setLoading(false);
       }
@@ -34,17 +42,21 @@ const ProtectedRoute = ({ children, auth = false }) => {
   };
 
   useEffect(() => {
-    checkAuth();
-  }, [token]); 
+    checkAuth(); 
+  }, [token, navigate]);
 
   if (loading) {
     return <div>Loading...</div>; 
   }
 
   if (!token && auth) {
-    checkAuth();
-    return <Navigate to='/users/sign_in' />;
+    localStorage.removeItem('token')
+    const token = localStorage.getItem('token')
+    if (!token) {
+      navigate('/users/sign_in')
+    }
   } 
+
   if (token && ['/users/sign_in', '/users/sign_up'].includes(location.pathname)) {
     return <Navigate to='/' />;
   }

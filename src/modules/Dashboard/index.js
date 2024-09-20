@@ -34,7 +34,6 @@ function Dashboard({ currentUser }) {
             setMessages(prevMessages => [...prevMessages, data]);
           }
           if (currentUser.id === data.other_user_id) {
-            console.log("ha yaha notification bejh do")
             sendNotification(data.content);
           }
         }

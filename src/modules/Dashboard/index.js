@@ -53,6 +53,11 @@ function Dashboard({ currentUser }) {
     });
   };
 
+  useEffect(() => {
+    if (search !== '') {
+      handleSearch();
+    }
+  }, [search]);
 
   useEffect(() => {
     fetchConversations();
@@ -62,10 +67,6 @@ function Dashboard({ currentUser }) {
       }
     });
   }, [search === '']);
-
-  useEffect(() => {
-    handleSearch();
-  }, [!search == '']);
 
   const fetchMessages = async (user_id) => {
     try {
@@ -118,10 +119,10 @@ function Dashboard({ currentUser }) {
       setMessage('');
     }
   };
-  const handleLogout =()=>{
+  const handleLogout = () => {
     localStorage.removeItem('token')
     const token = localStorage.getItem('token')
-    if(!token){
+    if (!token) {
       navigate('/users/sign_in')
     }
   }
@@ -191,10 +192,7 @@ function Dashboard({ currentUser }) {
               className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50"
               placeholder="Search Mockups, Logos..."
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                // e.target.form.requestSubmit();
-              }}
+              onChange={(e) => setSearch(e.target.value)}
               required
             />
             <button

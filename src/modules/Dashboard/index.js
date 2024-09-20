@@ -5,14 +5,15 @@ import Input from '../../components/input'
 import './index.css';
 import { useNavigate } from 'react-router-dom';
 
-function Dashboard({ currentUser }) {
+function Dashboard() {
+  const [currentUser, setCurrentUser] = useState(null);
   const [conversations, setConversations] = useState([])
   const [conversation, setConversation] = useState({})
   const [messages, setMessages] = useState([])
   const [message, setMessage] = useState('');
   const [search, setSearch] = useState('');
   const navigate = useNavigate()
-  const consumer = createConsumer("ws://localhost:8000/cable");  // Replace with your backend URL
+  const consumer = createConsumer("ws://localhost:8000/cable"); 
   const fetchConversations = async () => {
     const token = localStorage.getItem('token');
     const response = await fetch('http://localhost:8000/chatrooms', {
@@ -24,6 +25,38 @@ function Dashboard({ currentUser }) {
     const resData = await response.json()
     setConversations(resData)
   }
+
+  useEffect(() => {
+    if (!currentUser) {
+      checkAuth(); 
+    }
+  }, [currentUser]);
+
+  const checkAuth = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const response = await fetch('http://localhost:8000/current_user', {
+          method: 'GET',
+          headers: {
+            Authorization: `${token}`
+          }
+        });
+        const result = await response.json();
+        if (response.status === 200 && result.user) {
+          setCurrentUser(result.user);
+        } else if (result?.status === 401 && result?.message === 'User has no active session') {
+          localStorage.removeItem('token')
+          const token = localStorage.getItem('token')
+          if (!token) {
+            navigate('/users/sign_in');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
+    }
+  };
 
   useEffect(() => {
     const chatroomChannel = consumer.subscriptions.create(
@@ -160,8 +193,14 @@ function Dashboard({ currentUser }) {
             <img src={Avatar} width={75} height={75} className='' />
           </div>
           <div className='ml-8'>
-            <h3 className='text-2xl'>{currentUser.username}</h3>
-            <p className='text-lg font-light'>Active</p>
+            {currentUser ? (
+              <>
+                <h3 className='text-2xl'>{currentUser.username}</h3>
+                <p className='text-lg font-light'>Active</p>
+              </>
+            ) : (
+              <p>Loading...</p>
+            )}
           </div>
         </div>
         <form className="max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>

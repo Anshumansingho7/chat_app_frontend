@@ -61,7 +61,7 @@ const ProtectedRoute = ({ children, auth = false }) => {
     return <Navigate to='/' />;
   }
 
-  return React.cloneElement(children, { currentUser });
+  return React.cloneElement(children);
 };
 
 function App() {

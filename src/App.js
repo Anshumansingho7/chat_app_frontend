@@ -1,58 +1,56 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import Form from './modules/Form';
 import Dashboard from './modules/Dashboard';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 
 const ProtectedRoute = ({ children, auth = false }) => {
-  const [loading, setLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState('');
+  const token = localStorage.getItem('token'); 
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true); 
   const location = useLocation();
 
-  useEffect(() => {
-    const checkAuth = async () => {
+  const checkAuth = async () => {
+    if (token) {
       try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          // Set the Authorization header
-          const response = await fetch('http://localhost:8000/current_user', {
-            method: 'GET',
-            headers: { 
-              Authorization: `${token}` 
-            }
-          });
-
-          const result = await response.json();
-          setCurrentUser(result.user)
-          if (response.status === 200) {
-            setIsLoggedIn(true);
+        const response = await fetch('http://localhost:8000/current_user', {
+          method: 'GET',
+          headers: { 
+            Authorization: `${token}` 
           }
+        });
+        const result = await response.json();
+        if (response.status === 200 && result.user) {
+          setCurrentUser(result.user); 
         }
       } catch (error) {
-        setIsLoggedIn(false);
+        console.error('Error fetching user:', error); 
       } finally {
         setLoading(false);
       }
-    };
+    } else {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     checkAuth();
-  }, []);
+  }, [token]); 
 
   if (loading) {
-    return <div>Loading...</div>; // Or a spinner/loading indicator
+    return <div>Loading...</div>; 
   }
 
-  if (!isLoggedIn && auth) {
+  if (!token && auth) {
+    checkAuth();
     return <Navigate to='/users/sign_in' />;
-  } else if (isLoggedIn && ['/users/sign_in', '/users/sign_up'].includes(location.pathname)) {
+  } 
+  if (token && ['/users/sign_in', '/users/sign_up'].includes(location.pathname)) {
     return <Navigate to='/' />;
   }
 
   return React.cloneElement(children, { currentUser });
 };
-
 
 function App() {
   return (

@@ -3,6 +3,7 @@ import Avatar from '../../assets/avtar.webp'
 import { createConsumer } from "@rails/actioncable"
 import Input from '../../components/input'
 import './index.css';
+import { useNavigate } from 'react-router-dom';
 
 function Dashboard({ currentUser }) {
   const [conversations, setConversations] = useState([])
@@ -10,6 +11,7 @@ function Dashboard({ currentUser }) {
   const [messages, setMessages] = useState([])
   const [message, setMessage] = useState('');
   const [search, setSearch] = useState('');
+  const navigate = useNavigate()
   const consumer = createConsumer("ws://localhost:8000/cable");  // Replace with your backend URL
   const fetchConversations = async () => {
     const token = localStorage.getItem('token');
@@ -67,7 +69,7 @@ function Dashboard({ currentUser }) {
 
   useEffect(() => {
     handleSearch();
-  }, [search]);
+  }, [!search == '']);
 
   const fetchMessages = async (user_id) => {
     try {
@@ -120,7 +122,13 @@ function Dashboard({ currentUser }) {
       setMessage('');
     }
   };
-
+  const handleLogout =()=>{
+    localStorage.removeItem('token')
+    const token = localStorage.getItem('token')
+    if(!token){
+      navigate('/users/sign_in')
+    }
+  }
   const handleSearch = async (e) => {
 
     const token = localStorage.getItem('token');
@@ -150,6 +158,7 @@ function Dashboard({ currentUser }) {
   return (
     <div className='w-screen flex h-screen'>
       <div className='w-[100%] md:w-[25%] h-screen bg-secondary '>
+        <button onClick={handleLogout}>Logout</button>
         <div className='flex items-center my-8 mx-14'>
           <div className='border border-primary p-2 rounded-full'>
             <img src={Avatar} width={75} height={75} className='' />

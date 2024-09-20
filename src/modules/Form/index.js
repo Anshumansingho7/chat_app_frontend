@@ -47,7 +47,7 @@ function Form({ isSigninPage = true }) {
         }
         navigate('/');
       } else {
-        alert(result.status.message)
+        alert(result.status.errors)
       }
     } catch (error) {
       console.error('Error during operation:', error);

@@ -49,7 +49,6 @@ function Dashboard({ currentUser }) {
       if ('Notification' in window) {
         new Notification(data);
       } else {
-        console.log("Notifications denied");
       }
     });
   };
@@ -59,9 +58,7 @@ function Dashboard({ currentUser }) {
     fetchConversations();
     Notification.requestPermission().then(permission => {
       if ('Notification' in window) {
-        console.log("Notifications denied");
       } else {
-        console.log("Notifications denied");
       }
     });
   }, [search === '']);
@@ -88,7 +85,7 @@ function Dashboard({ currentUser }) {
         setMessages(resData.messages)
         setConversation(resData.chatroom)
       } else {
-        alert(resData?.status?.errors);
+        alert(resData?.errors);
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -111,7 +108,7 @@ function Dashboard({ currentUser }) {
     const result = await response.json();
     if (response.ok) {
     } else {
-      alert(result.status.errors);
+      alert(result?.errors);
     }
   };
 
@@ -146,7 +143,6 @@ function Dashboard({ currentUser }) {
         setConversations(result);
 
       } else {
-        // alert(result?.status?.errors);
       }
     } catch (error) {
       console.error('Error searching:', error);

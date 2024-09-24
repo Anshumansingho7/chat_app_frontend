@@ -267,7 +267,6 @@ function Dashboard() {
                     </div>
                     <div className='ml-6'>
                       <h3 className='text-lg font-semibold'>{conversation.other_user.username}</h3>
-                      <p className='text-sm font-light text-gray-600'>Active</p>
                     </div>
                   </div>
                 </div>
@@ -285,7 +284,6 @@ function Dashboard() {
               </div>
               <div className='ml-6 mr-auto'>
                 <h3 className='text-lg'>{conversation.other_user.username}</h3>
-                <p className='text-sm font-light text-gray-600'>online</p>
               </div>
               <div className='cursor-pointer'>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

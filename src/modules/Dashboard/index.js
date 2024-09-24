@@ -13,7 +13,7 @@ function Dashboard() {
   const [message, setMessage] = useState('');
   const [search, setSearch] = useState('');
   const navigate = useNavigate()
-  const consumer = createConsumer("ws://localhost:8000/cable"); 
+  const consumer = createConsumer("ws://localhost:8000/cable");
   const fetchConversations = async () => {
     const token = localStorage.getItem('token');
     const response = await fetch('http://localhost:8000/chatrooms', {
@@ -28,7 +28,7 @@ function Dashboard() {
 
   useEffect(() => {
     if (!currentUser) {
-      checkAuth(); 
+      checkAuth();
     }
   }, [currentUser]);
 
@@ -187,21 +187,28 @@ function Dashboard() {
   return (
     <div className='w-screen flex h-screen'>
       <div className='w-[100%] md:w-[25%] h-screen bg-secondary '>
-        <button onClick={handleLogout}>Logout</button>
-        <div className='flex items-center my-8 mx-14'>
-          <div className='border border-primary p-2 rounded-full'>
-            <img src={Avatar} width={75} height={75} className='' />
+        <div className='flex items-center justify-between my-8 mx-14'>
+          <div className='flex items-center'>
+            <div className='border border-primary p-2 rounded-full shadow-lg'>
+              <img src={Avatar} width={75} height={75} className='rounded-full' />
+            </div>
+            <div className='ml-8'>
+              {currentUser ? (
+                <>
+                  <h3 className='text-2xl font-semibold'>{currentUser.username}</h3>
+                  <p className='text-lg font-light text-gray-500'>Active</p>
+                </>
+              ) : (
+                <p>Loading...</p>
+              )}
+            </div>
           </div>
-          <div className='ml-8'>
-            {currentUser ? (
-              <>
-                <h3 className='text-2xl'>{currentUser.username}</h3>
-                <p className='text-lg font-light'>Active</p>
-              </>
-            ) : (
-              <p>Loading...</p>
-            )}
-          </div>
+          <button
+            onClick={handleLogout}
+            className='bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md ml-4'
+          >
+            Logout
+          </button>
         </div>
         <form className="max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
           <label htmlFor="default-search" className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">

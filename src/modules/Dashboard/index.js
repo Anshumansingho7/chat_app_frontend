@@ -67,6 +67,7 @@ function Dashboard() {
             setMessages(prevMessages => [...prevMessages, data]);
           }
           if (currentUser.id === data.other_user_id) {
+            fetchConversations();
             sendNotification(data.content);
           }
         }
@@ -91,6 +92,10 @@ function Dashboard() {
       handleSearch();
     }
   }, [search]);
+
+  useEffect(() => {
+    fetchConversations();
+  }, [messages]);
 
   useEffect(() => {
     fetchConversations();

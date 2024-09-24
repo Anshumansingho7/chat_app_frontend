@@ -63,10 +63,10 @@ function Dashboard() {
       { channel: "MessageChannel", chatroom_id: conversation.chatroomId },
       {
         received(data) {
-          if (conversation.chatroom_id === data.chatroom_id) {
+          if (conversation?.chatroom_id === data?.chatroom_id) {
             setMessages(prevMessages => [...prevMessages, data]);
           }
-          if (currentUser.id === data.other_user_id) {
+          if (currentUser?.id === data?.other_user_id) {
             fetchConversations();
             sendNotification(data.content);
           }

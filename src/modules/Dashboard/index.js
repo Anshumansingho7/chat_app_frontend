@@ -64,7 +64,7 @@ function Dashboard() {
       {
         received(data) {
           if (conversation?.chatroom_id === data?.chatroom_id) {
-            setMessages(prevMessages => [...prevMessages, data]);
+            fetchMessages(conversation?.other_user?.id)
           }
           if (currentUser?.id === data?.other_user_id) {
             fetchConversations();
@@ -260,8 +260,8 @@ function Dashboard() {
           <div>
             {conversations.length > 0 ? conversations.map((conversation) => {
               return (
-                <div className='flex items-center py-8 border-b border-b-gray-300'>
-                  <div className='cursor-pointer flex items-center' onClick={() => fetchMessages(conversation.other_user.id)}>
+                <div className='relative flex items-center py-8 border-b border-b-gray-300'>
+                  <div className='cursor-pointer flex items-center' onClick={() => fetchMessages(conversation?.other_user?.id)}>
                     <div>
                       <img src={Avatar} width={50} height={50} className='' />
                     </div>
@@ -269,6 +269,11 @@ function Dashboard() {
                       <h3 className='text-lg font-semibold'>{conversation.other_user.username}</h3>
                     </div>
                   </div>
+                  {conversation.unread_count > 0 && (
+                    <p className='absolute top-1/2 right-[10px] transform -translate-y-1/2 bg-blue-500 text-white rounded-full px-2 py-1 text-xs'>
+                      {conversation.unread_count}
+                    </p>
+                  )}
                 </div>
               );
             }) : <>no user found!</>}

@@ -30,7 +30,24 @@ function Dashboard() {
     if (!currentUser) {
       checkAuth();
     }
-  }, [currentUser]);
+    const chatroomChannel = consumer.subscriptions.create(
+      { channel: "MessageChannel", chatroom_id: conversation.chatroomId },
+      {
+        received(data) {
+          if (conversation?.chatroom_id === data?.chatroom_id) {
+            fetchMessages(conversation?.other_user?.id)
+          }
+          if (currentUser?.id === data?.other_user_id) {
+            fetchConversations();
+            sendNotification(data.content);
+          }
+        }
+      }
+    );
+    return () => {
+      chatroomChannel.unsubscribe();
+    };
+  }, [currentUser, message]);
 
   const checkAuth = async () => {
     const token = localStorage.getItem('token');
@@ -57,26 +74,6 @@ function Dashboard() {
       }
     }
   };
-
-  useEffect(() => {
-    const chatroomChannel = consumer.subscriptions.create(
-      { channel: "MessageChannel", chatroom_id: conversation.chatroomId },
-      {
-        received(data) {
-          if (conversation?.chatroom_id === data?.chatroom_id) {
-            fetchMessages(conversation?.other_user?.id)
-          }
-          if (currentUser?.id === data?.other_user_id) {
-            fetchConversations();
-            sendNotification(data.content);
-          }
-        }
-      }
-    );
-    return () => {
-      chatroomChannel.unsubscribe();
-    };
-  }, [messages]);
 
   const sendNotification = (data) => {
     Notification.requestPermission().then(permission => {

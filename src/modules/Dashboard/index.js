@@ -263,7 +263,7 @@ function Dashboard() {
                   )}
                 </div>
               );
-            }) : <>no user found!</>}
+            }) : <>No conversation found. Search user to start conversation.</>}
           </div>
         </div>
       </div>

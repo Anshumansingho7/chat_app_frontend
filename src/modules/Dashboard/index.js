@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Avatar from '../../assets/avtar.webp'
 import { createConsumer } from "@rails/actioncable"
-import Input from '../../components/input'
 import './index.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -47,7 +46,7 @@ function Dashboard() {
     return () => {
       chatroomChannel.unsubscribe();
     };
-  }, [currentUser, message]);
+  }, [currentUser, conversation]);
 
   const checkAuth = async () => {
     const token = localStorage.getItem('token');

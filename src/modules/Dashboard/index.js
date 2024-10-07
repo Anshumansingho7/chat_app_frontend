@@ -6,13 +6,14 @@ import { useNavigate } from 'react-router-dom';
 
 function Dashboard() {
   const [currentUser, setCurrentUser] = useState(null);
-  const [conversations, setConversations] = useState([])
-  const [conversation, setConversation] = useState({})
-  const [messages, setMessages] = useState([])
+  const [conversations, setConversations] = useState([]);
+  const [conversation, setConversation] = useState({});
+  const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
   const [search, setSearch] = useState('');
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const consumer = createConsumer("ws://localhost:8000/cable");
+
   const fetchConversations = async () => {
     const token = localStorage.getItem('token');
     const response = await fetch('http://localhost:8000/chatrooms', {
@@ -20,32 +21,34 @@ function Dashboard() {
       headers: {
         Authorization: `${token}`
       },
-    })
-    const resData = await response.json()
-    setConversations(resData)
-  }
+    });
+    const resData = await response.json();
+    setConversations(resData);
+  };
 
   useEffect(() => {
     if (!currentUser) {
       checkAuth();
     }
-    const chatroomChannel = consumer.subscriptions.create(
-      { channel: "MessageChannel", chatroom_id: conversation.chatroomId },
-      {
-        received(data) {
-          if (conversation?.chatroom_id === data?.chatroom_id) {
-            fetchMessages(conversation?.other_user?.id)
-          }
-          if (currentUser?.id === data?.other_user_id) {
-            fetchConversations();
-            sendNotification(data.content);
+
+      const chatroomChannel = consumer.subscriptions.create(
+        { channel: "MessageChannel", chatroom_id: conversation.chatroomId },
+        {
+          received(data) {
+            if (conversation?.chatroom_id === data?.chatroom_id) {
+              fetchMessages(conversation?.other_user?.id);
+            }
+            if (currentUser?.id === data?.other_user_id) {
+              fetchConversations();
+              sendNotification(data.content);
+            }
           }
         }
-      }
-    );
-    return () => {
-      chatroomChannel.unsubscribe();
-    };
+      );
+
+      return () => {
+        chatroomChannel.unsubscribe();
+      };
   }, [currentUser, conversation]);
 
   const checkAuth = async () => {
@@ -62,11 +65,8 @@ function Dashboard() {
         if (response.status === 200 && result.user) {
           setCurrentUser(result.user);
         } else if (result?.status === 401 && result?.message === 'User has no active session') {
-          localStorage.removeItem('token')
-          const token = localStorage.getItem('token')
-          if (!token) {
-            navigate('/users/sign_in');
-          }
+          localStorage.removeItem('token');
+          navigate('/users/sign_in');
         }
       } catch (error) {
         console.error('Error fetching user:', error);
@@ -75,12 +75,13 @@ function Dashboard() {
   };
 
   const sendNotification = (data) => {
-    Notification.requestPermission().then(permission => {
-      if ('Notification' in window) {
-        new Notification(data);
-      } else {
-      }
-    });
+    if ('Notification' in window) {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          new Notification(data);
+        }
+      });
+    }
   };
 
   useEffect(() => {
@@ -95,17 +96,13 @@ function Dashboard() {
 
   useEffect(() => {
     fetchConversations();
-    Notification.requestPermission().then(permission => {
-      if ('Notification' in window) {
-      } else {
-      }
-    });
+    Notification.requestPermission();  // No need to check window here, it’s already supported.
   }, [search === '']);
 
   const fetchMessages = async (user_id) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/chatrooms', {
+      const response = await fetch(`http://localhost:8000/chatrooms`, {  // Changed method to GET
         method: 'POST',
         headers: {
           'Authorization': `${token}`,
@@ -115,10 +112,10 @@ function Dashboard() {
           user_id
         })
       });
-      const resData = await response.json()
+      const resData = await response.json();
       if (response.ok) {
-        setMessages(resData.messages)
-        setConversation(resData.chatroom)
+        setMessages(resData.messages);
+        setConversation(resData.chatroom);
       } else {
         alert(resData?.errors);
       }
@@ -137,12 +134,11 @@ function Dashboard() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        content: content
+        content
       })
     });
     const result = await response.json();
-    if (response.ok) {
-    } else {
+    if (!response.ok) {
       alert(result?.errors);
     }
   };
@@ -153,15 +149,13 @@ function Dashboard() {
       setMessage('');
     }
   };
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    const token = localStorage.getItem('token')
-    if (!token) {
-      navigate('/users/sign_in')
-    }
-  }
-  const handleSearch = async (e) => {
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/users/sign_in');
+  };
+
+  const handleSearch = async (e) => {
     const token = localStorage.getItem('token');
     try {
       const response = await fetch(`http://localhost:8000/search?search=${encodeURIComponent(search)}`, {
@@ -171,18 +165,15 @@ function Dashboard() {
           'Content-Type': 'application/json',
         },
       });
-
       const result = await response.json();
-
       if (response.ok) {
         setConversations(result);
-
-      } else {
       }
     } catch (error) {
       console.error('Error searching:', error);
     }
   };
+
 
 
   return (

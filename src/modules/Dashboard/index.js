@@ -334,7 +334,7 @@ function Dashboard() {
                       : 'bg-secondary rounded-b-xl rounded-tr-xl'
                       }`}
                   >
-                    {message.id}
+                    {message.content}
                   </div>
                 ))}
               </div>

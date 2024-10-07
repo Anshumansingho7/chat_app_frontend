@@ -10,6 +10,7 @@ function Dashboard() {
   const [conversation, setConversation] = useState({});
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
+  const [pagination, setPagination] = useState({});
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
   const consumer = createConsumer("ws://localhost:8000/cable");
@@ -27,28 +28,66 @@ function Dashboard() {
   };
 
   useEffect(() => {
+    const handleScroll = (e) => {
+      const { scrollTop, scrollHeight, clientHeight } = e.target;
+      const absoluteScrollTop = Math.abs(scrollTop); // Convert to positive for reverse scrolling
+
+      if (scrollHeight - absoluteScrollTop === clientHeight && pagination.next_page <= pagination.total_pages) {
+        loadMoreMessages(pagination.next_page);
+      }
+
+    };
+
+    const messageContainer = document.querySelector('.message-container');
+    if (messageContainer) {
+      messageContainer.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      if (messageContainer) {
+        messageContainer.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [pagination, conversation]);
+
+  const loadMoreMessages = async(nextPage) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:8000/chatrooms/${conversation.chatroom_id}/messages?page=${nextPage}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `${token}`
+      },
+    });
+    const resData = await response.json();
+    if (response.ok) {
+      setMessages((prevMessages) => [...resData.messages, ...prevMessages]); // Append new messages to the existing array
+      setPagination(resData.pagination);
+    } 
+  };
+
+  useEffect(() => {
     if (!currentUser) {
       checkAuth();
     }
 
-      const chatroomChannel = consumer.subscriptions.create(
-        { channel: "MessageChannel", chatroom_id: conversation.chatroomId },
-        {
-          received(data) {
-            if (conversation?.chatroom_id === data?.chatroom_id) {
-              fetchMessages(conversation?.other_user?.id);
-            }
-            if (currentUser?.id === data?.other_user_id) {
-              fetchConversations();
-              sendNotification(data.content);
-            }
+    const chatroomChannel = consumer.subscriptions.create(
+      { channel: "MessageChannel", chatroom_id: conversation.chatroomId },
+      {
+        received(data) {
+          if (conversation?.chatroom_id === data?.chatroom_id) {
+            fetchMessages(conversation?.other_user?.id);
+          }
+          if (currentUser?.id === data?.other_user_id) {
+            fetchConversations();
+            sendNotification(data.content);
           }
         }
-      );
+      }
+    );
 
-      return () => {
-        chatroomChannel.unsubscribe();
-      };
+    return () => {
+      chatroomChannel.unsubscribe();
+    };
   }, [currentUser, conversation]);
 
   const checkAuth = async () => {
@@ -115,10 +154,9 @@ function Dashboard() {
       const resData = await response.json();
       if (response.ok) {
         setMessages(resData.messages);
+        setPagination(resData.pagination);
         setConversation(resData.chatroom);
-      } else {
-        alert(resData?.errors);
-      }
+      } 
     } catch (error) {
       console.error('Error fetching messages:', error);
       alert('An error occurred while fetching messages.');
@@ -286,21 +324,20 @@ function Dashboard() {
                 </svg>
               </div>
             </div>
-            <div className='h-[75%] w-full overflow-scroll shadow-sm scrollbar-hide flex flex-col-reverse'>
+            <div className='h-[75%] w-full overflow-scroll shadow-sm scrollbar-hide flex flex-col-reverse message-container'>
               <div className='px-10 py-14'>
                 {messages.map((message, index) => (
                   <div
-                    key={index} // Add a key to uniquely identify each element
+                    key={index}
                     className={`max-w-[40%] p-4 mb-6 ${message.user_id === currentUser.id
                       ? 'bg-primary rounded-b-xl rounded-tl-xl ml-auto text-white'
                       : 'bg-secondary rounded-b-xl rounded-tr-xl'
                       }`}
                   >
-                    {message.content}
+                    {message.id}
                   </div>
                 ))}
               </div>
-
             </div>
             <div className='p-14 w-full flex items-center'>
               <input
